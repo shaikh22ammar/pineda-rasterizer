@@ -1,0 +1,48 @@
+[
+  {
+    "file": "src/display.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-Wextra",
+      "-std=c23",
+      "-Wdouble-promotion",
+      "-Wfloat-conversion",
+      "-MMD",
+      "-MP",
+      "-Isrc",
+      "-I/opt/homebrew/include",
+      "-O0",
+      "-g",
+      "-o",
+      "build/objs/display.o",
+      "-c",
+      "src/display.c"
+    ],
+    "directory": "/Users/shaikhammar/Documents/Programming/graphics/pineda",
+    "output": "build/objs/display.o"
+  },
+  {
+    "file": "src/main.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-Wextra",
+      "-std=c23",
+      "-Wdouble-promotion",
+      "-Wfloat-conversion",
+      "-MMD",
+      "-MP",
+      "-Isrc",
+      "-I/opt/homebrew/include",
+      "-O0",
+      "-g",
+      "-o",
+      "build/objs/main.o",
+      "-c",
+      "src/main.c"
+    ],
+    "directory": "/Users/shaikhammar/Documents/Programming/graphics/pineda",
+    "output": "build/objs/main.o"
+  }
+]

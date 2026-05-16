@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <SDL3/SDL.h>
+#include "errors.h"
+#include "color.h"
+#include <assert.h>
+
+extern int windowWidth, windowHeight;
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern color32_t *colorBuffer;
+extern SDL_Texture *colorBufferTexture;
+
+exitCode_e initWindow () {
+	bool allOkay = true;
+// SDL Initiialization
+	SDL_InitFlags flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
+	allOkay = !!SDL_Init(flags);
+	if (!allOkay) goto cleanup;
+// Window creation	
+	SDL_PropertiesID props = SDL_CreateProperties();
+	allOkay = !!props;
+	if (!allOkay) goto cleanup;
+
+	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Pineda rasterizer");
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+
+	window = SDL_CreateWindowWithProperties(props);
+	allOkay = !!window;
+	if (!allOkay) goto cleanup;
+// Renderer creation
+	renderer = SDL_CreateRenderer(window, NULL);
+	allOkay = !!renderer;
+	SDL_GetCurrentRenderOutputSize(renderer, &windowWidth, &windowHeight);
+	if (!allOkay) goto cleanup;
+// Colorbuffer
+	assert(sizeof(color32_t)==4);
+	colorBuffer = malloc(sizeof(color32_t)*windowWidth*windowHeight);
+	allOkay = !!colorBuffer;
+	if (!allOkay) goto cleanup;
+
+	colorBufferTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, windowWidth, windowHeight);
+	allOkay = !!colorBufferTexture;
+	if (!allOkay) goto cleanup;
+cleanup:
+	exitCode_e error = allOkay ? PINEDA_SUCCESS : SDL_INIT_ERROR;
+	handleError(error);
+	return error;
+}
+
+void renderColorBuffer() {
+	SDL_UpdateTexture(colorBufferTexture, NULL, colorBuffer, sizeof(color32_t)*windowWidth);
+	SDL_RenderTexture(renderer, colorBufferTexture, NULL, NULL);
+}
+
+void clearColorBuffer(color32_t color) {
+	for (int i = 0; i < windowHeight; i++) {
+		for (int j = 0 ; j < windowWidth; j++) {
+			colorBuffer[i*windowWidth + j].rgba = color.rgba;
+		}
+	}
+}
+
+void destroyWindow(void) {
+	SDL_DestroyTexture(colorBufferTexture);
+	free(colorBuffer);
+	colorBuffer = nullptr;
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+}
