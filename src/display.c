@@ -23,9 +23,16 @@ exitCode_e initWindow () {
 	if (!allOkay) goto cleanup;
 
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Pineda rasterizer");
-	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
-	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
-	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+	//SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+	//SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+	//SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+	if (windowWidth && windowHeight) {
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, windowWidth);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, windowHeight);
+	} else {
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+	}
 
 	window = SDL_CreateWindowWithProperties(props);
 	allOkay = !!window;
@@ -33,8 +40,10 @@ exitCode_e initWindow () {
 // Renderer creation
 	renderer = SDL_CreateRenderer(window, NULL);
 	allOkay = !!renderer;
+	SDL_Rect rect;
+	SDL_GetWindowSafeArea(window, &rect);
 	SDL_GetCurrentRenderOutputSize(renderer, &windowWidth, &windowHeight);
-	if (!allOkay) goto cleanup;
+ 	if (!allOkay) goto cleanup;
 // Colorbuffer
 	assert(sizeof(color32_t)==4);
 	colorBuffer = malloc(sizeof(color32_t)*windowWidth*windowHeight);
@@ -53,6 +62,15 @@ cleanup:
 void renderColorBuffer() {
 	SDL_UpdateTexture(colorBufferTexture, NULL, colorBuffer, sizeof(color32_t)*windowWidth);
 	SDL_RenderTexture(renderer, colorBufferTexture, NULL, NULL);
+}
+
+void drawPixel(int i, int j) {
+	color32_t color = {.rgba = 0xFFFFFFFF}; 
+	if (i < 0 || i >= windowHeight || j < 0 || j >= windowWidth) { 
+		handleError(PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS); 
+		return;
+	}
+	colorBuffer[i*windowWidth + j] = color;
 }
 
 void clearColorBuffer(color32_t color) {

@@ -6,6 +6,7 @@
 typedef enum {
 	PINEDA_SUCCESS,
 	SDL_INIT_ERROR,
+	PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS,
 	PINEDA_ERROR_UNKNOWN
 } exitCode_e;
 
@@ -16,6 +17,9 @@ static inline void handleError(exitCode_e error) {
 		case SDL_INIT_ERROR:
 			fprintf(stderr, "FATAL ERROR: SDL Initializatioin failed\n");
 			exit(error);
+			break;
+		case PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS:
+			fprintf(stderr, "WARNING: Attempt to access outside color buffer region\n");
 			break;
 		case PINEDA_ERROR_UNKNOWN:
 			fprintf(stderr, "FATAL ERROR: Unknown\n");
