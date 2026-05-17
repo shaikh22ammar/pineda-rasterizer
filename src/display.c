@@ -66,30 +66,21 @@ void renderColorBuffer() {
 	SDL_RenderTexture(renderer, colorBufferTexture, NULL, NULL);
 }
 
-void drawPixel(int i, int j) {
-	color32_t color = {.rgba = 0xFFFFFFFF}; 
-	if (i < 0 || i >= windowHeight || j < 0 || j >= windowWidth) { 
-		handleError(PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS); 
-		return;
-	}
-	colorBuffer[i*windowWidth + j] = color;
-}
-
-void drawPixelsVectorized(int i, int j, int32x4_t mask) {
-	if (i < 0 || i >= windowHeight || j < 0 || j >= windowWidth) { 
-		handleError(PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS); 
+void drawPixelsVectorized(int i, int j, uint32x4_t mask) {
+	color32_t color = {.rgba = 0xFFFFFFFF};	
+	if (i < 0 || i >= windowHeight || j < 0 || j >= windowWidth) {
+		handleError(PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS);
 		return;
 	}
 
-	int mask0 = vgetq_lane_s32(mask, 0);
-	int mask1 = vgetq_lane_s32(mask, 1);
-	int mask2 = vgetq_lane_s32(mask, 2);
-	int mask3 = vgetq_lane_s32(mask, 3);
-	
-	if (mask0) drawPixel(i, j); 
-	if (mask1) drawPixel(i, j+1); 
-	if (mask2) drawPixel(i, j+2); 
-	if (mask3) drawPixel(i, j+3); 
+	uint32_t *dst = (uint32_t *) colorBuffer + i*windowWidth + j;
+
+	uint32x4_t existing = vld1q_u32(dst);
+	uint32x4_t fill     = vdupq_n_u32(color.rgba);
+
+	uint32x4_t result = vbslq_u32(mask, fill, existing);
+
+	vst1q_u32(dst, result);
 }
 
 void clearColorBuffer(color32_t color) {
