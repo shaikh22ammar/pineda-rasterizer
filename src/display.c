@@ -5,6 +5,8 @@
 #include "color.h"
 #include <assert.h>
 
+#include <arm_neon.h>
+
 extern int windowWidth, windowHeight;
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
@@ -71,6 +73,23 @@ void drawPixel(int i, int j) {
 		return;
 	}
 	colorBuffer[i*windowWidth + j] = color;
+}
+
+void drawPixelsVectorized(int i, int j, int32x4_t mask) {
+	if (i < 0 || i >= windowHeight || j < 0 || j >= windowWidth) { 
+		handleError(PINEDA_WARNING_COLOR_BUFFER_OUT_OF_BOUNDS_ACCESS); 
+		return;
+	}
+
+	int mask0 = vgetq_lane_s32(mask, 0);
+	int mask1 = vgetq_lane_s32(mask, 1);
+	int mask2 = vgetq_lane_s32(mask, 2);
+	int mask3 = vgetq_lane_s32(mask, 3);
+	
+	if (mask0) drawPixel(i, j); 
+	if (mask1) drawPixel(i, j+1); 
+	if (mask2) drawPixel(i, j+2); 
+	if (mask3) drawPixel(i, j+3); 
 }
 
 void clearColorBuffer(color32_t color) {
