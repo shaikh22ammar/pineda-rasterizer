@@ -81,9 +81,11 @@ void rasterizeTriangle(fixedPoint2d_t p, fixedPoint2d_t q, fixedPoint2d_t r) {
 		int32x4_t currBaryCoord_rp_vectorized = rowStartBaryCoord_rp_vectorized;
 
 		for (fixedPoint_t x = min_x; x <= max_x; x+= VECTOR_REG_WIDTH) {
+#ifndef NDEBUG
 			if (x == 352 && y == 300) {
-				int debug = 0;
+				[[maybe_unused]] int debug = 0;
 			}
+#endif
 			int32x4_t mask = 
 				vorrq_s32(
 				vorrq_s32(
